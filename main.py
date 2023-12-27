@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import cv2
+import serial.tools.list_ports
 from PIL import Image, ImageOps, ImageTk
 
 
@@ -16,9 +17,8 @@ class Gui(tk.Frame):
         self.master = master
         self.master.geometry("1920x1080")
         self.master.title("Virtual KVM")
-
-        module1 = ('tkinter', 'math', 'os', 'pyinstaller', 'pathlib', 'sys')
-        module2 = ('tkinter2', 'math2',)
+        self.master.bind('<KeyPress>', self.keyPress)
+        self.master.bind('<KeyRelease>', self.keyRelease)
 
         # ----- Setting frame -----
         self.setting_frame = ttk.Labelframe(self.master,
@@ -67,7 +67,6 @@ class Gui(tk.Frame):
         self.serial_selector = ttk.Combobox(self.serial_frame,
                                             width=20,
                                             height=50,
-                                            values=module2,
                                             state="readonly",
                                             )
         self.serial_selector.bind('<<ComboboxSelected>>', self.selected_serial)
@@ -89,6 +88,7 @@ class Gui(tk.Frame):
         self.master.after_idle(self.startup_task)
 
     def startup_task(self):
+        self.reload_serial_list()
         threading.Thread(target=self.reload_cam_list, args=(True,)).start()
 
     def selected_cam(self, event):
@@ -111,6 +111,9 @@ class Gui(tk.Frame):
 
     def reload_serial_list(self):
         print('press reload_serial')
+        self.serial_selector['values'] = sorted([p.device for p in list(serial.tools.list_ports.comports())])
+        if len(self.serial_selector['values']):
+            self.serial_selector.current(0)
 
     def connect_camera(self, camera_number, width=1920, height=1080, fps=30):
         capture = cv2.VideoCapture(camera_number)
@@ -171,6 +174,15 @@ class Gui(tk.Frame):
             self.start_video()
         self.reload_cam['state'] = tk.NORMAL
         self.cam_selector['state'] = tk.READABLE
+
+    def keyPress(self, event):
+        """ 何かキーが押された時に実行したい処理 """
+        print(f'PRESS keycode: {event.keycode} keysym: {event.keysym} keysym_num: {event.keysym_num}')
+
+    def keyRelease(self, event):
+        """ 何かキーが押された時に実行したい処理 """
+        print(f'RELEASE keycode: {event.keycode} keysym: {event.keysym} keysym_num: {event.keysym_num}')
+
 
 def main():
     root = tk.Tk()
