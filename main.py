@@ -10,6 +10,14 @@ from PIL import Image, ImageOps, ImageTk
 from ch9329 import CH9329
 
 
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+
+
 class Gui(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
@@ -98,7 +106,7 @@ class Gui(tk.Frame):
         self.master.focus()
         select_num = self.cam_selector.get()
         if self.capture:
-            print('Capture release')
+            logger.debug('Capture release')
             self.capture.release()
         self.capture = self.connect_camera(int(select_num))
         self.start_video()
@@ -106,9 +114,14 @@ class Gui(tk.Frame):
     def selected_serial(self, event):
         self.master.focus()
         if self.serial_keyboard:
-            print('Serial release')
+            logger.debug('Serial release')
             self.serial_keyboard.close()
-        self.serial_keyboard = CH9329(self.serial_selector.get())
+            self.serial_keyboard = None
+
+        try:
+            self.serial_keyboard = CH9329(self.serial_selector.get())
+        except:
+            logger.exception('Failed to connect to serial device', stack_info=True)
 
     def reload_cam_list(self, default_select=False):
         self.master.focus()
@@ -127,7 +140,7 @@ class Gui(tk.Frame):
         capture.set(3, width)
         capture.set(4, height)
         capture.set(5, fps)
-        print(f'Connected to camera {camera_number}')
+        logger.debug(f'Connected to camera {camera_number}')
         return capture
 
     def start_video(self):
@@ -135,7 +148,7 @@ class Gui(tk.Frame):
         canvas_height = self.canvas_cam.winfo_height()
 
         if not self.capture or not self.capture.isOpened():
-            print('Capture is not ready...')
+            logger.debug('Capture is not ready...')
             self.master.after(300, self.start_video)
         else:
             _, img = self.capture.read()
@@ -167,10 +180,10 @@ class Gui(tk.Frame):
 
             if ret is True:
                 true_camera_is.append(camera_number)
-                print("port number", camera_number, "Find!")
+                logger.debug("port number", camera_number, "Find!")
 
             else:
-                print("port number", camera_number, "None")
+                logger.debug("port number", camera_number, "None")
             cap.release()
 
         # update UI
@@ -185,14 +198,14 @@ class Gui(tk.Frame):
     def keyPress(self, event):
         """ 何かキーが押された時に実行したい処理 """
         self.master.focus()
-        print(f'PRESS keycode: {event.keycode} keysym: {event.keysym} keysym_num: {event.keysym_num}')
+        logger.debug(f'PRESS keycode: {event.keycode} keysym: {event.keysym} keysym_num: {event.keysym_num}')
         if self.serial_keyboard:
             self.serial_keyboard.key_press(event.keycode)
 
     def keyRelease(self, event):
         """ 何かキーが押された時に実行したい処理 """
         self.master.focus()
-        print(f'RELEASE keycode: {event.keycode} keysym: {event.keysym} keysym_num: {event.keysym_num}')
+        logger.debug(f'RELEASE keycode: {event.keycode} keysym: {event.keysym} keysym_num: {event.keysym_num}')
         if self.serial_keyboard:
             self.serial_keyboard.key_release(event.keycode)
 

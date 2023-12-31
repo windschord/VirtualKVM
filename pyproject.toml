@@ -1,0 +1,8 @@
+[project]
+name = "VirtualKVM"
+version = "0.1"
+description = "KVM with HDMI adapter and Keyboard/Mouse emulater"
+
+[tool.distutils.build_exe]
+excludes = ["unittest"]
+zip_include_packages = ["tkinter"]

@@ -1,0 +1,4 @@
+opencv-python==4.8.1.78
+numpy==1.26.2
+cx_Freeze==6.16.0.dev9
+pyserial==3.5
