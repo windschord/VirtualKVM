@@ -1,6 +1,8 @@
 import logging
+import os
 import threading
 import tkinter as tk
+from logging.handlers import TimedRotatingFileHandler
 from tkinter import ttk
 
 import cv2
@@ -9,13 +11,14 @@ from PIL import Image, ImageOps, ImageTk
 
 from ch9329 import CH9329
 
-
+os.makedirs('log', exist_ok=True)
 logger = logging.getLogger()
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
-file_handler = logging.TimeRotatingFileHandler('app.log', when='D', interval=1, backupCount=7)
+file_handler = TimedRotatingFileHandler(os.path.join('log', 'app.log'), when='D', interval=1, backupCount=7)
 logger.addHandler(stream_handler)
+logger.addHandler(file_handler)
 logger.setLevel(logging.DEBUG)
 
 
@@ -179,12 +182,11 @@ class Gui(tk.Frame):
 
             ret, _ = cap.read()
 
-            if ret is True:
+            if ret:
                 true_camera_is.append(camera_number)
-                logger.debug("port number", camera_number, "Find!")
-
+                logger.debug("Camera number %s Find!", camera_number)
             else:
-                logger.debug("port number", camera_number, "None")
+                logger.debug("Camera number %s None..", camera_number)
             cap.release()
 
         # update UI
