@@ -30,7 +30,7 @@ class Gui(tk.Frame):
         self.capture = None
         self.serial_keyboard = None
         self.master = master
-        self.master.geometry("1920x1080")
+        self.master.geometry("1465x920")
         self.master.title("Virtual KVM")
         self.master.bind('<KeyPress>', self.keyPress)
         self.master.bind('<KeyRelease>', self.keyRelease)
@@ -96,8 +96,9 @@ class Gui(tk.Frame):
         # ----- Image frame -----
         self.image_frame = tk.Frame(self.master, width=200, height=400, bg='grey')
         self.image_frame.grid(row=1, padx=10, pady=5, sticky=tk.NSEW)
-        self.canvas_cam = tk.Canvas(self.image_frame, width=1920, height=1080, bg='black')
+        self.canvas_cam = tk.Canvas(self.image_frame, width=1440, height=810, bg='black')
         self.canvas_cam.pack(side="top", fill="both")
+        self.canvas_img = self.canvas_cam.create_image(0, 0, anchor=tk.NW)
 
         # ----- Init Camera -----
         self.master.after_idle(self.startup_task)
@@ -163,8 +164,8 @@ class Gui(tk.Frame):
                 img2 = ImageOps.pad(img2, (canvas_width, canvas_height))
                 self.disp_img = ImageTk.PhotoImage(image=img2)
 
-                self.canvas_cam.create_image(0, 0, image=self.disp_img, anchor=tk.NW)
-                self.canvas_cam.update()
+                self.canvas_cam.itemconfig(self.canvas_img, image=self.disp_img)
+                # self.canvas_cam.update()
             except Exception as e:
                 logging.exception(e)
 
