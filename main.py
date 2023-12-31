@@ -11,10 +11,11 @@ from ch9329 import CH9329
 
 
 logger = logging.getLogger()
-handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+file_handler = logging.TimeRotatingFileHandler('app.log', when='D', interval=1, backupCount=7)
+logger.addHandler(stream_handler)
 logger.setLevel(logging.DEBUG)
 
 
@@ -100,7 +101,7 @@ class Gui(tk.Frame):
 
     def startup_task(self):
         self.reload_serial_list()
-        # threading.Thread(target=self.reload_cam_list, args=(True,)).start()
+        threading.Thread(target=self.reload_cam_list, args=(True,)).start()
 
     def selected_cam(self, event):
         self.master.focus()
