@@ -7,6 +7,8 @@ import cv2
 import serial.tools.list_ports
 from PIL import Image, ImageOps, ImageTk
 
+from ch9329 import CH9329
+
 
 class Gui(tk.Frame):
     def __init__(self, master):
@@ -14,6 +16,7 @@ class Gui(tk.Frame):
 
         self.disp_img = None
         self.capture = None
+        self.serial_keyboard = None
         self.master = master
         self.master.geometry("1920x1080")
         self.master.title("Virtual KVM")
@@ -89,11 +92,11 @@ class Gui(tk.Frame):
 
     def startup_task(self):
         self.reload_serial_list()
-        threading.Thread(target=self.reload_cam_list, args=(True,)).start()
+        # threading.Thread(target=self.reload_cam_list, args=(True,)).start()
 
     def selected_cam(self, event):
+        self.master.focus()
         select_num = self.cam_selector.get()
-        print(f'Selected camera {select_num}')
         if self.capture:
             print('Capture release')
             self.capture.release()
@@ -101,16 +104,20 @@ class Gui(tk.Frame):
         self.start_video()
 
     def selected_serial(self, event):
-        print(self.serial_selector.get())
+        self.master.focus()
+        if self.serial_keyboard:
+            print('Serial release')
+            self.serial_keyboard.close()
+        self.serial_keyboard = CH9329(self.serial_selector.get())
 
     def reload_cam_list(self, default_select=False):
-        print('press reload_cam')
+        self.master.focus()
         self.reload_cam['state'] = tk.DISABLED
         self.cam_selector['state'] = tk.DISABLED
         threading.Thread(target=self._get_connected_camera, args=(default_select,)).start()
 
     def reload_serial_list(self):
-        print('press reload_serial')
+        self.master.focus()
         self.serial_selector['values'] = sorted([p.device for p in list(serial.tools.list_ports.comports())])
         if len(self.serial_selector['values']):
             self.serial_selector.current(0)
@@ -177,11 +184,17 @@ class Gui(tk.Frame):
 
     def keyPress(self, event):
         """ 何かキーが押された時に実行したい処理 """
+        self.master.focus()
         print(f'PRESS keycode: {event.keycode} keysym: {event.keysym} keysym_num: {event.keysym_num}')
+        if self.serial_keyboard:
+            self.serial_keyboard.key_press(event.keycode)
 
     def keyRelease(self, event):
         """ 何かキーが押された時に実行したい処理 """
+        self.master.focus()
         print(f'RELEASE keycode: {event.keycode} keysym: {event.keysym} keysym_num: {event.keysym_num}')
+        if self.serial_keyboard:
+            self.serial_keyboard.key_release(event.keycode)
 
 
 def main():
