@@ -6,3 +6,5 @@ description = "KVM with HDMI adapter and Keyboard/Mouse emulater"
 [tool.distutils.build_exe]
 excludes = ["unittest"]
 zip_include_packages = ["tkinter"]
+optimize = 2
+build_exe = 'build/exe'
